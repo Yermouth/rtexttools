@@ -6,7 +6,7 @@
 #Project with: Wouter Van Atteveldt, Tim Jurka, #
 #              Amber Boydstun, Emiliano Grossman#
 #################################################
-
+s
 #Set working directory
 setwd("C:\\Users\\Loren\\Documents\\My Dropbox\\RTextTools\\Datasets")
 
@@ -83,6 +83,23 @@ da <- datainput("French_news1_csv.csv", type="csv")
 db <- datainput("French_news1_tab.txt",type="tab")
 #Access mdb or accdb
 dc <- datainput("nyt_front_page_1996_2006_Scott_Recodes_Fall2010_decile01.mdb", tablename="Issues", type="mdb")
+
+#MySQL
+library(RMySQL) #sometimes has problems installing on Windows. Something to do with Namespaces and registry,
+# had to use Mac
+
+mysql_in <- function(dbname, user, password=NULL, host, tablename){
+    
+    drv <- dbDriver("MySQL")
+    con <- dbConnect(drv, dbname=dbname, user=user, password=password, host=host)
+    result <- dbGetQuery(con, paste('select * from',tablename,sep=" "))
+    return(result)
+}
+
+#This grabs data from a phpMyadmin account
+senateshort <- mysql_in(dbname="cbp", user="lorenc2", password='MADEUPPASSWORD', 
+                 host='cbp.serverk.org', tablename='actorsSenate')
+
 
 #####################################################
 #                   text_to_df                      #
