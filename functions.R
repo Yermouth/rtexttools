@@ -6,7 +6,7 @@
 #Project with: Wouter Van Atteveldt, Tim Jurka, #
 #              Amber Boydstun, Emiliano Grossman#
 #################################################
-s
+
 #Set working directory
 setwd("C:\\Users\\Loren\\Documents\\My Dropbox\\RTextTools\\Datasets")
 
@@ -99,7 +99,6 @@ mysql_in <- function(dbname, user, password=NULL, host, tablename){
 #This grabs data from a phpMyadmin account
 senateshort <- mysql_in(dbname="cbp", user="lorenc2", password='MADEUPPASSWORD', 
                  host='cbp.serverk.org', tablename='actorsSenate')
-
 
 #####################################################
 #                   text_to_df                      #
@@ -221,3 +220,140 @@ truncated_words <- word_trunc(da$headline,wordtrunc=4)
 #French dataset. 10,183 observations
 #   user  system elapsed 
 # 541.19   20.11  569.70 
+
+###############################################
+#               multi_text                    #
+###############################################
+#Ability to use two - four columns of text
+#column1 = character vector of text
+#column2 = character vector of text    
+#column3 = character vector of text
+#column4 = character vector of text
+#length = number, how many columns the analyst is concatenating
+multi_text <- function(column1, column2, column3=NULL, column4=NULL, length=2) {
+
+    if (length==2){
+        columnout <- paste(column1,column2,sep="")
+    } else
+    if (length==3){
+        columnout <- paste(column1,column2,column3,sep="")
+    } else
+    if (length==4)
+        columnout <- paste(column1,column2,column3,column4,sep="")
+    return(columnout)
+}
+
+#Paste same columns next to each other
+fr2 <- french[1:1000,]
+headline <- fr2$headline #headline column from French dataset
+textcolumn <- fr2$text   #text column from French dataset
+#Two Columns    
+cat2 <- multi_text(headline,textcolumn)
+#Three Columns
+cat3 <- multi_text(headline,textcolumn,textcolumn, length=3)
+#Four Columns
+cat4 <- multi_text(headline,textcolumn,textcolumn,headline,length=4)
+
+
+##########################################################
+#                   textual_param                        #
+##########################################################
+
+#Must include packages: tm, Snowball
+#This function trims the text, including whitespace removal, lowercase, and removing stopwords
+
+#textual_vect = character vector from dataframe or wherever
+#language =  language you are working with: "english","french", "spanish", etc.
+#whitespace = TRUE/FALSE Whitespace removal
+#lowercase = TRUE/FALSE Convert all text to lowercase
+#removestopwords =TRUE/FALSE Remove stopwords in text
+textual_param <- function(textual_vect, language, whitespace=TRUE, lowercase=TRUE,
+                          removestopwords=TRUE, ...) {
+    #Read in initial character vector
+    corp <- Corpus(VectorSource(textual_vect), readerControl=list(language=language))
+
+    #Strip Whitespace
+    if (whitespace)
+        corp <- tm_map(corp,stripWhitespace)
+    #Lowercase
+    if (lowercase)
+        corp <- tm_map(corp,tolower)
+    #Remove Stopwords        
+    if (removestopwords)
+        corp <- tm_map(corp, removeWords,stopwords(language))
+    return(corp)
+}
+
+textparam_out <- textual_param(textual_vect=fr2$text, language="french")
+#For some reason Word Stemming (mapping) won't work inside the function when it 
+#goes to return the object; probably because it's mapping something an not an object. Tim?
+tm_map(textparam_out, stemDocument)
+
+################################################
+#                   dtm                        #
+################################################
+#Document Term Matrix production with option for sparsity control of the matrix
+#corpus -- a corpus of text, produced from textual_param and tm_map(corpus, stemDocument)
+#may want to make a few different classes, but can consider later
+dtm <- function(corpus, sparsity=.9998) {
+    dtm <- DocumentTermMatrix(corpus)
+    out <- removeSparseTerms(dtm,sparsity)
+}
+
+french_dtm <- dtm(textparam_out,sparsity=.98) # this sparsity number will need to be toyed with, sometimes R will crap out 
+                                              #in the next function becuase it's too big.
+
+#######################################################
+#                      traintest                      #
+#######################################################
+#This function takes a document term matrix and produces the appropriate 
+#training matrixes and labeling vectors. Requires SparseM package for sparse matrix
+#production. Function assumes all data are in a standard n*k dataframe (note: this may change)
+#dtm -- document term matrix as produced by dtm or some other way
+#label -- the label/code category of the text for training and testing if not on virgin text, or training if on virgin text
+#trainsize -- a sequence (i.e., 1:800) of text itmes used for training
+#testsize -- a sequence (i.e., 801-1000) of text items used for test evaluation
+library(SparseM)
+
+traintest <- function(dtm,label,trainsize,testsize) {
+    train <- dtm[trainsize]
+    test <- dtm[testsize]
+
+    train_code <- as.factor(label[trainsize])
+    test_code <- as.factor(label[testsize])
+    
+    #Need non-sparse matrix for prediction
+    matrix_train_predict <- as.matrix(train, "matrix.csr")
+    matrix_test_predict <- as.matrix(test, "matrix.csr")
+    
+    #Need sparse matrix for algorithm    
+    matrix_train_sparse <- as.matrix.csr(matrix_train_predict)
+    matrix_test_sparse <- as.matrix.csr(matrix_test_predict)
+        
+    #return a list of these four items
+    return(list(trainmat=matrix_train_sparse, testmat=matrix_test_sparse,
+                trainpredict=matrix_train_predict, testpredict=matrix_test_predict,
+                train_code=train_code, test_code=test_code))
+}
+
+train_test <- traintest(dtm=french_dtm,label=da$Codegros,trainsize=1:800, testsize=801:1000)
+#Look at the names of the list items.
+names(train_test)
+########################################################
+#Run a model from SVM
+########################################################
+
+#now need to add in something regarding the code category
+
+library("e1071") #svm and other algorithms
+
+#SVM
+#Train
+model1 <- svm(x=train_test$trainpredict, y=train_test$train_code, method="C-classification", cross=5)
+summary(model1) # not good because case size is very small so I could run on my computer
+
+#Classify/ Predict
+predtest <- predict(model1,train_test$testpredict)
+
+#Check accuracy
+classAgreement(table(train_test$test_code,predtest),match.names=F) 
