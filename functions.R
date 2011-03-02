@@ -110,6 +110,7 @@ senateshort <- mysql_in(dbname="cbp", user="lorenc2", password='MADEUPPASSWORD',
 #a control file, a comma delimted file listing as rows the file name, the code
 #of that file, and any other information.
 
+#LC Note: May have to do something with the Language component here.
 setwd("F:\\CAPPP\\texttools\\ReadMe")
 
 #directory -- where the text files are stored
@@ -181,9 +182,8 @@ system.time(
 library(openNLP)
 #Packages need to be installed but not loaded. The example below is done on the French data, 
 #so language here doesn't appear to be a problem.
-install.packages("openNLPmodels.en")
-install.packages("openNLPmodels.es")
-
+#install.packages("openNLPmodels.en")
+#install.packages("openNLPmodels.es")
 
 word_trunc <- function(textcolumn,wordtrunc) {
 
@@ -308,7 +308,8 @@ french_dtm <- dtm(textparam_out,sparsity=.98) # this sparsity number will need t
 #######################################################
 #This function takes a document term matrix and produces the appropriate 
 #training matrixes and labeling vectors. Requires SparseM package for sparse matrix
-#production. Function assumes all data are in a standard n*k dataframe (note: this may change)
+#production. Function assumes all data are in a standard n*k dataframe (note: this may change).
+#Output is a list.
 #dtm -- document term matrix as produced by dtm or some other way
 #label -- the label/code category of the text for training and testing if not on virgin text, or training if on virgin text
 #trainsize -- a sequence (i.e., 1:800) of text itmes used for training
@@ -357,3 +358,75 @@ predtest <- predict(model1,train_test$testpredict)
 
 #Check accuracy
 classAgreement(table(train_test$test_code,predtest),match.names=F) 
+
+
+###################################################################
+#                           accuracy                              #
+###################################################################
+#Purpose: To check how well the test dataset does against the pre-existing codes
+#Assumes new codes have been put into a dataframe and appended onto the earlier dataframe.
+#For example, look at the congres dataset below. This is a subset of 
+#U.S. congressional bills that have been classified
+
+#prelabel -- the handcode/pre-existing label for the dataset, must be in "character" format
+#columnames -- character vector of columnames of the algorithms in the dataset.
+#data -- the dataframe from which the labels are stored. So the original data + appended columns
+
+setwd("C:\\Users\\Loren\\Documents\\My Dropbox\\RTextTools\\Datasets")
+
+congress <- datainput("congress.csv", type="csv", header=TRUE) # use datainput function from above
+
+accuracy <- function(prelabel,columnames,data) {
+
+    Call <- match.call()
+    indx <- match(c("prelabel", "columnames", "data"), names(Call), 
+        nomatch = 0)
+    if (indx[1] == 0) 
+        stop("A numeric vector must be included")
+    if (indx[2] == 0) 
+        stop("A character vector must be included")    
+    if (indx[3] == 0) 
+        stop("A data frame must be included")    
+
+    dat <- data
+    #Extract just the columns you want from the data
+    datmat <- as.matrix(dat[match(c(prelabel,columnames), colnames(dat))])
+    out <- NULL
+    out2 <- NULL
+    #use classAgreement function to extract diag scores, kappa, rand index, and rand index corrected
+    #Note, first column of datmat is "Pre-existing code", that's why we skip it here
+    for (i in 2:ncol(datmat)) {
+        a <- table(datmat[,1],datmat[,i])
+        out[[i]]<- classAgreement(a) #use the classAgreemnt function from e1071 package
+        out2[[i]] <- c(out[[i]]$diag,out[[i]]$kappa, out[[i]]$rand, out[[i]]$crand)
+    }
+
+    #Rbind the rows together with a loop
+    finalout <- out2[[2]] # note, first list item is blank (because we skipped it)
+    for (i in 3:length(out2)){
+        finalrotate <- rbind(finalout, out2[[i]])
+        finalout <- finalrotate
+    }
+    colnames(finalout) <- c("Diag_Predict", "Kappa_Diag", "Rand_Index", "Rand_Index_Cor")
+    rownames(finalout) <- columnames
+    
+    return(round(finalout,3))
+}
+
+accuracyout <- accuracy(prelabel="major", columnames=c("new_code_naive","new_code_maxent", "new_code_ling", "new_code_svm"), data=congress)
+accuracyout
+library(xtable) # for LaTeX code
+xtable(accuracyout)
+#If you want to extract the columns you need to turn into a dataframe.
+
+
+
+#Probably will want to have another column with some sort of confidence prediction. 
+#So either Xvalidation scores, probability scores. This is not possible for every algorithm however. 
+#Only the algorithms where this is available.
+
+
+#Next Steps
+#May want to create a confusion matrix function for Diagnostic Purposes
+
+#append the column of scores to the dataset and then write that dataset out
