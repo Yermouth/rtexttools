@@ -34,23 +34,23 @@ word_trunc <- function(textcolumn,wordtrunc) {
         tokenwords <- tokenize(textstring)
         token_trunc <- tokenwords[1:truncation]
         backtogether <- paste(token_trunc, collapse=" ")
-        return(backtogether)
+        backtogether_clean <- gsub("NA","",backtogether,fixed=TRUE)
+        return(backtogether_clean)
     }
 
-    newvec <- NULL
-    newvec_clean <- NULL
-    for (i in 1:length(textcolumn)) { #loop over each text item
-        newvec[i] <- word_token_trunc(textcolumn[i],truncation=wordtrunc)
-        #Need to delete the NA's that form from text that are blank or less than the truncation specification
-        newvec_clean[i] <- gsub("NA","",newvec[i],fixed=TRUE)
-    }
-    rm(newvec) #clean up
-return(newvec_clean)
+    word_trunc <- mapply(FUN=word_token_trunc,fr3,truncation=10)
+
+return(word_trunc)
 }
 
-#system.time(
-#truncated_words <- word_trunc(da$headline,wordtrunc=4)
-#)
+system.time(
+    truncated_words <- word_trunc(da$headline,wordtrunc=4)
+)
+
 #French dataset. 10,183 observations
 #   user  system elapsed 
 # 541.19   20.11  569.70 
+
+#with mapply
+#   user  system elapsed 
+#   8.29    0.20    8.52 

@@ -86,23 +86,23 @@ cross_validate <- function(fnct,train_test,nfold,type=c("SVM","NAIVE","BOOSTING"
     }
 }
 
-cvsvm <- cross_validate(fnct=svm,train_test=train_test,nfold=3,type="SVM")
+#cvsvm <- cross_validate(fnct=svm,train_test=train_test,nfold=3,type="SVM")
 #set seed for replicability
-cvsvm <- cross_validate(fnct=svm,train_test=train_test,nfold=3,type="SVM",seed=3444)
-cvsvm
-cvnaive <- cross_validate(fnct=naiveBayes,train_test=train_test,nfold=5,type="NAIVE")
-cvnaive
-cvrf <- cross_validate(fnct=randomForest,train_test=train_test,nfold=3,type="RF")
-cvrf
+#cvsvm <- cross_validate(fnct=svm,train_test=train_test,nfold=3,type="SVM",seed=3444)
+#cvsvm
+#cvnaive <- cross_validate(fnct=naiveBayes,train_test=train_test,nfold=5,type="NAIVE")
+#cvnaive
+#cvrf <- cross_validate(fnct=randomForest,train_test=train_test,nfold=3,type="RF")
+#cvrf
 #Folds predictions after the error message "Error in if(outlist$msg!="unknown error") return(outlist): argument is of length zero"
 #   are wrong. Ignore those, still trying to figure out how to fix. However, this probably won't happen with large datasets.
-cvglmnet <- cross_validate(fnct=glmnet,train_test=train_test,nfold=5,type="GLMNET")
-cvglmnet
-cvboosting <- cross_validate(fnct=AdaBoostM1,train_test=train_test,nfold=5,type="BOOSTING")
-cvboosting
-cvbagging <- cross_validate(fnct=Bagging,train_test=train_test,nfold=5,type="BAGGING")
-cvbagging
-cvtree <- cross_validate(fnct=tree,train_test=train_test,nfold=6,type="TREE")
-cvtree
-cvnnet <- cross_validate(fnct=nnet,train_test=train_test,nfold=3,type="NNET")
-cvnnet
+#cvglmnet <- cross_validate(fnct=glmnet,train_test=train_test,nfold=5,type="GLMNET")
+#cvglmnet
+#cvboosting <- cross_validate(fnct=AdaBoostM1,train_test=train_test,nfold=5,type="BOOSTING")
+#cvboosting
+#cvbagging <- cross_validate(fnct=Bagging,train_test=train_test,nfold=5,type="BAGGING")
+#cvbagging
+#cvtree <- cross_validate(fnct=tree,train_test=train_test,nfold=6,type="TREE")
+#cvtree
+#cvnnet <- cross_validate(fnct=nnet,train_test=train_test,nfold=3,type="NNET")
+#cvnnet

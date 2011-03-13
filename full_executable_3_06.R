@@ -35,6 +35,7 @@ fr2 <- da[1:1000,]
 textparam_out <- textual_param(textual_vect=fr2$text, language="french")
 tm_map(textparam_out, stemDocument)
 
+
 ##########################################
 #       Create Document Term Matrix      #
 ##########################################
@@ -90,6 +91,7 @@ RF <- train_model(train_test=train_test,RF=TRUE)
 GLMNET <- train_model(train_test=train_test,GLMNET=TRUE)
 TREE <- train_model(train_test=train_test,TREE=TRUE)
 NNET <- train_model(train_test=train_test,NNET=TRUE)
+
 
 #Train with Features
 SVM_f <- train_model(train_test_features,SVM=TRUE)
