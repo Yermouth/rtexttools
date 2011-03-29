@@ -28,6 +28,12 @@ da <- datainput("French_news1_csv.csv", type="csv")
 #Subset data so it can run on small gb computers, just for testing purposes
 fr2 <- da[1:1000,]
 
+textr <- fr2$text
+system.time(
+    truncated_words <- word_trunc(textr,wordtrunc=10)
+)
+
+
 ##########################################
 #          Stopword and Stemming         #
 ##########################################

@@ -37,15 +37,16 @@ word_trunc <- function(textcolumn,wordtrunc) {
         backtogether_clean <- gsub("NA","",backtogether,fixed=TRUE)
         return(backtogether_clean)
     }
-
-    word_trunc <- mapply(FUN=word_token_trunc,fr3,truncation=10)
+    
+    text.list <- as.list(textcolumn)
+    word_trunc <- mapply(FUN=word_token_trunc,text.list,wordtrunc)
 
 return(word_trunc)
 }
 
-system.time(
-    truncated_words <- word_trunc(da$headline,wordtrunc=4)
-)
+#system.time(
+#    truncated_words <- word_trunc(da$headline,wordtrunc=4)
+#)
 
 #French dataset. 10,183 observations
 #   user  system elapsed 
@@ -54,3 +55,7 @@ system.time(
 #with mapply
 #   user  system elapsed 
 #   8.29    0.20    8.52 
+
+#second time with worse memory
+#   user  system elapsed 
+#  64.76    0.28   66.60 
