@@ -1,0 +1,12 @@
+Package: RTextTools
+Type: Package
+Title: A comprehensive machine learning library for R
+Version: 1.0
+Date: 2011-03-08
+Author: Loren Collingwood, Tim Jurka, Wouter van Atteveldt
+Maintainer: Tim Jurka <timjurka@gmail.com>
+Depends: R (>= 2.11.0), SparseM, RWeka, randomForest, glmnet, tree, nnet, tm, Snowball, e1071, openNLP, openNLPmodels.en, openNLPmodels.es
+Enhances: maxent, RODBC
+Description: RTextTools is an R machine learning library based on the TextTools project started by Paul Wolfgang. The library has been rewritten from the ground up to provide the functionality of the Java version within an R interface. Our goal is to create a comprehensive machine learning library that allows for automatic classification of large, text-based datasets.
+License: GPL-3
+LazyLoad: yes

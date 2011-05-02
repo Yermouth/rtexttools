@@ -1,0 +1,147 @@
+create_analytics <- function(matrix_container,classification_results) {
+	create_documentSummary <- function(container, scores) {
+		return(cbind(MANUAL_CODE=container@testing_codes,CONSENSUS_CODE=scores$BEST_LABEL,CONSENSUS_INCORRECT=container@testing_codes!=scores$BEST_LABEL,PROBABILITY_CODE=scores$BEST_PROB,PROBABILITY_INCORRECT=container@testing_codes!=scores$BEST_PROB))
+	}
+	
+	create_topicSummary <- function(container, scores) {
+		topic_codes <- unique(container@testing_codes)
+		manually_coded <- c()
+		automatically_coded_label <- c()
+		automatically_coded_prob <- c()
+		correctly_coded_label <- c()
+		correctly_coded_prob <- c()
+		over_coded_label <- c()
+		over_coded_prob <- c()
+		
+		for (code in topic_codes) {
+			num_manual <- length(container@testing_codes[container@testing_codes==code])
+			num_automatic_label <- length(scores$BEST_LABEL[scores$BEST_LABEL==code])
+			pct_analysis_label <- container@testing_codes[container@testing_codes==scores$BEST_LABEL]==code
+			pct_correct_label <- length(pct_analysis_label[pct_analysis_label == TRUE])/num_manual
+			
+			num_automatic_prob <- length(scores$BEST_PROB[scores$BEST_PROB==code])
+			pct_analysis_prob <- container@testing_codes[container@testing_codes==scores$BEST_PROB]==code
+			pct_correct_prob <- length(pct_analysis_prob[pct_analysis_prob == TRUE])/num_manual
+			
+			manually_coded <- append(manually_coded,num_manual)
+			
+			automatically_coded_label <- append(automatically_coded_label,num_automatic_label)
+			correctly_coded_label <- append(correctly_coded_label,pct_correct_label*100)
+			over_coded_label <- append(over_coded_label,num_automatic_label/num_manual*100)
+			
+			automatically_coded_prob <- append(automatically_coded_prob,num_automatic_prob)
+			correctly_coded_prob <- append(correctly_coded_prob,pct_correct_prob*100)
+			over_coded_prob <- append(over_coded_prob,num_automatic_prob/num_manual*100)
+		}
+		
+		return(cbind(TOPIC_CODE=topic_codes,NUM_MANUALLY_CODED=manually_coded,NUM_CONSENSUS_CODED=automatically_coded_label,NUM_PROBABILITY_CODED=automatically_coded_prob,PCT_CONSENSUS_CODED=over_coded_label,PCT_PROBABILITY_CODED=over_coded_prob,PCT_CORRECTLY_CODED_CONSENSUS=correctly_coded_label,PCT_CORRECTLY_CODED_PROBABILITY=correctly_coded_prob))
+	}
+	
+	create_algorithmSummary <- function(container, scores) {
+		topic_codes <- unique(container@testing_codes)
+		
+		bagging_accuracy <- c()
+		nbayes_accuracy <- c()
+		adaboost_accuracy <- c()
+		svm_accuracy <- c()
+		forests_accuracy <- c()
+		glmnet_accuracy <- c()
+		tree_accuracy <- c()
+		nnetwork_accuracy <- c()
+		maxentropy_accuracy <- c()
+		
+		algorithm_summary <- cbind(TOPIC_CODE=topic_codes)
+		columns <- colnames(scores)
+		
+		for (code in topic_codes) {
+			if (pmatch("SVM_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$SVM_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				svm_accuracy <- append(svm_accuracy,pct_correct)
+			}
+			
+			if (pmatch("NBAYES_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$NBAYES_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				nbayes_accuracy <- append(nbayes_accuracy,pct_correct)
+			}
+			
+			if (pmatch("ADABOOST_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$ADABOOST_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				adaboost_accuracy <- append(adaboost_accuracy,pct_correct)
+			}
+			
+			if (pmatch("BAGGING_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$BAGGING_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				bagging_accuracy <- append(bagging_accuracy,pct_correct)
+			}
+			
+			if (pmatch("FORESTS_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$FORESTS_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				forests_accuracy <- append(forests_accuracy,pct_correct)
+			}
+			
+			if (pmatch("GLMNET_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$GLMNET_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				glmnet_accuracy <- append(glmnet_accuracy,pct_correct)
+			}
+			
+			if (pmatch("TREE_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$TREE_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				tre_accuracy <- append(tree_accuracy,pct_correct)
+			}
+			
+			if (pmatch("NNETWORK_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$NNETWORK_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				nnetwork_accuracy <- append(nnetwork_accuracy,pct_correct)
+			}
+			
+			if (pmatch("MAXENTROPY_LABEL",columns,nomatch=0) > 0) {
+				num_manual <- length(container@testing_codes[container@testing_codes==code])
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$MAXENTROPY_LABEL]==code
+				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
+				maxentropy_accuracy <- append(maxentropy_accuracy,pct_correct)
+			}
+			
+		}
+		
+		if (length(bagging_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,BAGGING_ACCURACY=bagging_accuracy*100)
+		if (length(nbayes_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,NBAYES_ACCURACY=nbayes_accuracy*100)
+		if (length(adaboost_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,ADABOOST_ACCURACY=adaboost_accuracy*100)
+		if (length(svm_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,SVM_ACCURACY=svm_accuracy*100)
+		if (length(forests_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,FORESTS_ACCURACY=forests_accuracy*100)
+		if (length(glmnet_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,GLMNET_ACCURACY=glmnet_accuracy*100)
+		if (length(tree_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,TREE_ACCURACY=tree_accuracy*100)
+		if (length(nnetwork_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,NNETWORK_ACCURACY=nnetwork_accuracy*100)
+		if (length(maxentropy_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,MAXENTROPY_ACCURACY=maxentropy_accuracy*100)
+		
+		return(algorithm_summary)
+	}
+		
+	score_summary <- score_classify(matrix_container, classification_results)
+	document_summary <- create_documentSummary(matrix_container, score_summary)
+	topic_summary <- create_topicSummary(matrix_container, score_summary)
+	algorithm_summary <- create_algorithmSummary(matrix_container, score_summary)
+	
+	last_two_columns <- (length(score_summary)-1):length(score_summary)
+	raw_summary <- cbind(classification_results,score_summary[last_two_columns])
+	
+    setClass("analytics_container",representation(document_summary="matrix", topic_summary="matrix", algorithm_summary="matrix", score_summary="data.frame"))
+    container <- new("analytics_container", document_summary=document_summary, topic_summary=topic_summary, algorithm_summary=algorithm_summary, score_summary=raw_summary)
+    
+    return(container)   
+}
