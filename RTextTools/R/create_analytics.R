@@ -1,6 +1,6 @@
 create_analytics <- function(matrix_container,classification_results) {
 	create_documentSummary <- function(container, scores) {
-		return(cbind(MANUAL_CODE=container@testing_codes,CONSENSUS_CODE=scores$BEST_LABEL,CONSENSUS_INCORRECT=container@testing_codes!=scores$BEST_LABEL,PROBABILITY_CODE=scores$BEST_PROB,PROBABILITY_INCORRECT=container@testing_codes!=scores$BEST_PROB))
+		return(cbind(MANUAL_CODE=as.numeric(as.vector(container@testing_codes)),CONSENSUS_CODE=scores$BEST_LABEL,CONSENSUS_AGREE=scores$NUM_AGREE,CONSENSUS_INCORRECT=container@testing_codes!=scores$BEST_LABEL,PROBABILITY_CODE=scores$BEST_PROB,PROBABILITY_INCORRECT=container@testing_codes!=scores$BEST_PROB))
 	}
 	
 	create_topicSummary <- function(container, scores) {
@@ -34,7 +34,7 @@ create_analytics <- function(matrix_container,classification_results) {
 			over_coded_prob <- append(over_coded_prob,num_automatic_prob/num_manual*100)
 		}
 		
-		return(cbind(TOPIC_CODE=topic_codes,NUM_MANUALLY_CODED=manually_coded,NUM_CONSENSUS_CODED=automatically_coded_label,NUM_PROBABILITY_CODED=automatically_coded_prob,PCT_CONSENSUS_CODED=over_coded_label,PCT_PROBABILITY_CODED=over_coded_prob,PCT_CORRECTLY_CODED_CONSENSUS=correctly_coded_label,PCT_CORRECTLY_CODED_PROBABILITY=correctly_coded_prob))
+		return(cbind(TOPIC_CODE=as.numeric(as.vector(topic_codes)),NUM_MANUALLY_CODED=manually_coded,NUM_CONSENSUS_CODED=automatically_coded_label,NUM_PROBABILITY_CODED=automatically_coded_prob,PCT_CONSENSUS_CODED=over_coded_label,PCT_PROBABILITY_CODED=over_coded_prob,PCT_CORRECTLY_CODED_CONSENSUS=correctly_coded_label,PCT_CORRECTLY_CODED_PROBABILITY=correctly_coded_prob))
 	}
 	
 	create_algorithmSummary <- function(container, scores) {
@@ -50,7 +50,7 @@ create_analytics <- function(matrix_container,classification_results) {
 		nnetwork_accuracy <- c()
 		maxentropy_accuracy <- c()
 		
-		algorithm_summary <- cbind(TOPIC_CODE=topic_codes)
+		algorithm_summary <- cbind(TOPIC_CODE=as.numeric(as.vector(topic_codes)))
 		columns <- colnames(scores)
 		
 		for (code in topic_codes) {

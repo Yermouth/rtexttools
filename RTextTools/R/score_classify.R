@@ -12,6 +12,7 @@ score_classify <- function(container, results) {
 		
 	best_labels <- c()
 	best_probs <- c()
+	agree_score <- c()
 	unique <- sort(unique(container@training_codes))
 	for (i in 1:nrow(results)) {
 		row_labels <- labels[i,]
@@ -32,7 +33,8 @@ score_classify <- function(container, results) {
 		
 		best_probs <- append(best_probs,results[create_label_name][i,])
 		best_labels <- append(best_labels,as.vector(unique[which.max(dist)]))
+		agree_score <- append(agree_score,as.vector(max(dist)))
 	}
 	
-	return(cbind(labels,BEST_LABEL=as.numeric(best_labels),BEST_PROB=best_probs))
+	return(cbind(labels,BEST_LABEL=as.numeric(best_labels),BEST_PROB=best_probs, NUM_AGREE=agree_score))
 }

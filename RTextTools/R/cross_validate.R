@@ -6,8 +6,8 @@ function(fnct,matrix_container,nfold,type=c("SVM","NAIVE","BOOSTING","BAGGING","
     if (!is.na(seed)) #Set seed for replicability
         set.seed(seed)
     #Bring in info from the matrix_container function    
-	#alldata <- rbind(matrix_container@training_matrix,matrix_container@classification_matrix) #put all data together
-	alldata <- matrix_container@full_matrix
+	alldata <- rbind(matrix_container@training_matrix,matrix_container@classification_matrix) #put all data together
+	#alldata <- matrix_container@full_matrix
 	allcodes <- as.factor(c(matrix_container@training_codes,matrix_container@testing_codes))
     data_and_codes <-cbind(alldata,allcodes)
     #Sample
