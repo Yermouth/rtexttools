@@ -14,22 +14,23 @@ train_model <- function(matrix_container,SVM=FALSE,NAIVE=FALSE,BOOSTING=FALSE,BA
         if (SVM==TRUE) {
 			model <- svm(x=matrix_container@training_matrix, y=matrix_container@training_codes, method=method, cross=cross, cost=cost, probability=TRUE, kernel=kernel)
 		} else if (NAIVE == TRUE) {
-           model <- naiveBayes(x=matrix_container@training_matrix, y=matrix_container@training_codes)
+           model <- naiveBayes(x=as.matrix(matrix_container@training_matrix), y=matrix_container@training_codes)
         } else if (BOOSTING == TRUE) {
-            model <- AdaBoostM1(matrix_container.training_codes ~ ., data=data.frame(matrix_container@training_matrix,matrix_container@training_codes), control=Weka_control(W="J48"))
+            model <- AdaBoostM1(matrix_container.training_codes ~ ., data=data.frame(as.matrix(matrix_container@training_matrix),matrix_container@training_codes), control=Weka_control(W="J48"))
         } else if (BAGGING == TRUE) {
-            model <- Bagging(matrix_container.training_codes ~ .,data=data.frame(matrix_container@training_matrix,matrix_container@training_codes),control=Weka_control(W="J48"))
+            model <- Bagging(matrix_container.training_codes ~ .,data=data.frame(as.matrix(matrix_container@training_matrix),matrix_container@training_codes),control=Weka_control(W="J48"))
         } else if (RF == TRUE) {
-            model <- randomForest(x=matrix_container@training_matrix, y=matrix_container@training_codes, ntree=ntree)
+            model <- randomForest(x=as.matrix(matrix_container@training_matrix), y=matrix_container@training_codes, ntree=ntree)
         } else if (GLMNET == TRUE) {
-            model <- glmnet(x=matrix_container@training_matrix, y=matrix_container@training_codes, family="multinomial", maxit=maxitglm)
+            model <- glmnet(x=as.matrix(matrix_container@training_matrix), y=matrix_container@training_codes, family="multinomial", maxit=maxitglm)
         } else if (TREE == TRUE) {
-            model <- tree(matrix_container.training_codes ~ .,data=data.frame(matrix_container@training_matrix,matrix_container@training_codes))
+            model <- tree(matrix_container.training_codes ~ .,data=data.frame(as.matrix(matrix_container@training_matrix),matrix_container@training_codes))
         } else if (NNET == TRUE) {
-            model <- nnet(matrix_container.training_codes ~ .,data=data.frame(matrix_container@training_matrix,matrix_container@training_codes), size=size, maxit=maxitnnet, MaxNWts=MaxNWts, rang=rang, decay=decay)
+            model <- nnet(matrix_container.training_codes ~ .,data=data.frame(as.matrix(matrix_container@training_matrix),matrix_container@training_codes), size=size, maxit=maxitnnet, MaxNWts=MaxNWts, rang=rang, decay=decay)
         } else if (MAXENT == TRUE) {
 			new_maxent()
-			model <- train_maxent(matrix_container@training_matrix,as.vector(matrix_container@training_codes),feature_cutoff=feature_cutoff,gaussian_prior=gaussian_prior,inequality_constraints=inequality_constraints)
+			#model <- train_maxent(matrix_container@training_matrix,as.vector(matrix_container@training_codes),feature_cutoff=feature_cutoff,gaussian_prior=gaussian_prior,inequality_constraints=inequality_constraints)
+			model <- train_maxent_sparse(matrix_container@training_matrix,as.vector(matrix_container@training_codes),feature_cutoff=feature_cutoff,gaussian_prior=gaussian_prior,inequality_constraints=inequality_constraints)
 		}
 		
 		# RETURN TRAINED MODEL

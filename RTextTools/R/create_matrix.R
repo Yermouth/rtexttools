@@ -1,4 +1,4 @@
-create_matrix <- function(trainingColumn, language="en", minDocFreq=1, minWordFreq=1, minWordLength=3, removeNumbers=FALSE, removePunctuation=TRUE, removeSparseTerms=0, removeStopwords=TRUE, selectFreqTerms=0, stemWords=TRUE, stripWhitespace=TRUE, toLower=TRUE, weighting=weightTf) {	
+create_matrix <- function(trainingColumn, language="en", minDocFreq=1, minWordFreq=1, minWordLength=3, extraColumns=NULL, removeNumbers=FALSE, removePunctuation=TRUE, removeSparseTerms=0, removeStopwords=TRUE, selectFreqTerms=0, stemWords=TRUE, stripWhitespace=TRUE, toLower=TRUE, weighting=weightTf) {	
 	stem_words <- function(x, language) {
 		tokens <- strsplit(x," ")[[1]]
 		tokens <- substr(tokens,1,255)
@@ -25,6 +25,10 @@ create_matrix <- function(trainingColumn, language="en", minDocFreq=1, minWordFr
 	}
 	
 	control <- list(weighting=weighting,language=language,tolower=toLower,stopwords=removeStopwords,removePunctuation=removePunctuation,removeNumbers=removeNumbers, stripWhitespace=TRUE, minWordLength=minWordLength , minDocFreq=minDocFreq)
+	
+	if (!is.null(extraColumns)) {
+		for (i in 1:ncol(extraColumns)) trainingColumn <- paste(trainingColumn,extraColumns[,i])
+	}
 	if (stemWords == TRUE) trainingColumn <- as.vector(sapply(trainingColumn,stem_words,language=language),mode="character")
 	if (selectFreqTerms > 0) trainingColumn <- as.vector(sapply(trainingColumn,select_topFreq,language=language,cutoff=selectFreqTerms,control=control),mode="character")
 	if (minWordFreq > 1) trainingColumn <- as.vector(sapply(trainingColumn,select_wordFreq,language=language,freq=minWordFreq,control=control),mode="character")

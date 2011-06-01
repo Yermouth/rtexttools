@@ -9,23 +9,32 @@ function(fnct,matrix_container,nfold,type=c("SVM","NAIVE","BOOSTING","BAGGING","
 	alldata <- rbind(matrix_container@training_matrix,matrix_container@classification_matrix) #put all data together
 	#alldata <- matrix_container@full_matrix
 	allcodes <- as.factor(c(matrix_container@training_codes,matrix_container@testing_codes))
-    data_and_codes <-cbind(alldata,allcodes)
     #Sample
     rand <- sample(nfold,dim(alldata)[1], replace=T) #replace
     
     cv_accuracy <- NULL
     for (i in sort(unique(rand))) {
-        if (type=="SVM" | type=="NAIVE") {
+        if (type=="SVM") {
             model <- fnct(x=alldata[rand!=i,], y=allcodes[rand!=i]) #put function here
             pred <- predict(model,alldata[rand==i,])
         } else
+		if (type=="NAIVE") {
+			alldata <- as.matrix(alldata)
+			colnames(alldata) <- matrix_container@column_names
+			model <- fnct(x=alldata[rand!=i,], y=allcodes[rand!=i]) #put function here
+            pred <- predict(model,alldata[rand==i,])
+		} else
         
         if (type=="RF") {
+			alldata <- rbind(as.matrix(matrix_container@training_matrix),as.matrix(matrix_container@classification_matrix))
+			colnames(alldata) <- matrix_container@column_names
+			data_and_codes <-cbind(alldata,allcodes)
             model <- fnct(as.factor(allcodes)~.,data=data_and_codes[rand!=i,])
             pred <- predict(model,newdata=alldata[rand==i,])
         } else
         if (type=="GLMNET") {
-
+			alldata <- rbind(as.matrix(matrix_container@training_matrix),as.matrix(matrix_container@classification_matrix))
+			colnames(alldata) <- matrix_container@column_names
             #have to use the try exception, if there is a "0" in one of the categories then model will fail
             #however, the code continues to run but it appears the some of the accuracies are incorrect.
             try(model <- fnct(x=alldata[rand!=i,], y=allcodes[rand!=i],family="multinomial", maxit=maxitglm),silent=FALSE)
@@ -34,27 +43,33 @@ function(fnct,matrix_container,nfold,type=c("SVM","NAIVE","BOOSTING","BAGGING","
  
         } else
         if (type=="BOOSTING"| type=="BAGGING") {
-            model <- fnct(as.factor(allcodes)~ ., data = data.frame(data_and_codes[rand!=i,]),
-                                 control = Weka_control(W = "J48"))
+			alldata <- rbind(as.matrix(matrix_container@training_matrix),as.matrix(matrix_container@classification_matrix))
+			colnames(alldata) <- matrix_container@column_names
+			data_and_codes <- cbind(alldata,allcodes)
+            model <- fnct(as.factor(allcodes)~ ., data = data.frame(data_and_codes[rand!=i,]), control = Weka_control(W = "J48"))
             pred <- predict(model,data.frame(alldata[rand==i,]))
         } else
         if (type=="TREE") {
-            
+			alldata <- rbind(as.matrix(matrix_container@training_matrix),as.matrix(matrix_container@classification_matrix))
+			colnames(alldata) <- matrix_container@column_names
+            data_and_codes <- cbind(alldata,allcodes)
             model <- fnct(as.factor(allcodes)~ ., data = data.frame(data_and_codes[rand!=i,]))
             prob <- predict(model,newdata=data.frame(alldata[rand==i,]), type="vector")
             pred <- apply(prob,1,which.max)
 
         } else
         if(type=="NNET") {
+			alldata <- rbind(as.matrix(matrix_container@training_matrix),as.matrix(matrix_container@classification_matrix))
+			colnames(alldata) <- matrix_container@column_names
+			data_and_codes <- cbind(alldata,allcodes)
             model <- fnct(as.factor(allcodes)~ ., data = data.frame(data_and_codes[rand!=i,]),size=size,maxit=maxitnnet)
-            prob <- predict(model,data.frame(alldata[rand==i,]))
+            prob <- predict(model,newdata=data.frame(alldata[rand==i,]))
             pred <- apply(prob,1,which.max)
-            
         } else
 		if (type=="MAXENT") {
 			new_maxent()
-			model <- fnct(matrix_container@training_matrix,as.vector(matrix_container@training_codes))
-			pred <- classify_maxent(alldata[rand==i,])
+			model <- train_maxent_sparse(matrix_container@training_matrix,as.vector(matrix_container@training_codes))
+			pred <- classify_maxent_sparse(alldata[rand==i,])
 		}
 
         try(confusion <- confusion_create(allcodes[rand==i],pred),silent=FALSE) #Internal function "confusion_create" used here

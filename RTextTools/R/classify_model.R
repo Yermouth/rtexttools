@@ -17,14 +17,14 @@ function(matrix_container, SVM=NULL,NAIVE=NULL,BOOSTING=NULL,BAGGING=NULL,RF=NUL
     } else
     
     if (!is.null(NAIVE)){
-        naive_results <- predict(NAIVE,matrix_container@classification_matrix)
+        naive_results <- predict(NAIVE,as.matrix(matrix_container@classification_matrix))
         results_table <- data.frame(as.numeric(as.character(naive_results)))
         
         colnames(results_table)[1] <- "NBAYES_LABEL"
     } else
 
     if (!is.null(BOOSTING)) {
-        aboost_results <- predict(BOOSTING,data.frame(matrix_container@classification_matrix),type="probability") #Probability
+        aboost_results <- predict(BOOSTING,data.frame(as.matrix(matrix_container@classification_matrix)),type="probability") #Probability
         aboost_pred <- apply(aboost_results,1,extract_label_from_prob) #Extract Label Based on Probability
         aboost_prob <- apply(aboost_results,1,extract_maximum_prob) #Extract Highest Probability
         
@@ -34,7 +34,7 @@ function(matrix_container, SVM=NULL,NAIVE=NULL,BOOSTING=NULL,BAGGING=NULL,RF=NUL
     } else
     
     if (!is.null(BAGGING)) {
-        bagging_results <- predict(BAGGING,data.frame(matrix_container@classification_matrix), type="probability")
+        bagging_results <- predict(BAGGING,data.frame(as.matrix(matrix_container@classification_matrix)), type="probability")
         bagging_pred <- apply(bagging_results,1,extract_label_from_prob) #Extract Label Based on Probability
         bagging_prob <- apply(bagging_results,1,extract_maximum_prob) 
         
@@ -44,7 +44,7 @@ function(matrix_container, SVM=NULL,NAIVE=NULL,BOOSTING=NULL,BAGGING=NULL,RF=NUL
     } else
     
     if (!is.null(RF)){
-        rf_results <- predict(RF,newdata=matrix_container@classification_matrix,type="prob")
+        rf_results <- predict(RF,newdata=as.matrix(matrix_container@classification_matrix),type="prob")
 		rf_pred <- apply(rf_results,1,extract_label_from_prob)
         rf_prob <- apply(rf_results,1,extract_maximum_prob)
 
@@ -54,7 +54,7 @@ function(matrix_container, SVM=NULL,NAIVE=NULL,BOOSTING=NULL,BAGGING=NULL,RF=NUL
     } else
     
     if (!is.null(GLMNET)){
-        glmnet_results <- predict(GLMNET,newx=matrix_container@classification_matrix,s=s,type="response")
+        glmnet_results <- predict(GLMNET,newx=as.matrix(matrix_container@classification_matrix),s=s,type="response")
         glmnet_pred <- apply(glmnet_results[,,1],1,extract_label_from_prob) 
         glmnet_prob <- apply(glmnet_results,1,extract_maximum_prob) 
         
@@ -64,7 +64,7 @@ function(matrix_container, SVM=NULL,NAIVE=NULL,BOOSTING=NULL,BAGGING=NULL,RF=NUL
     } else
     
     if (!is.null(TREE)){
-        tree_results <- predict(TREE,newdata=data.frame(matrix_container@classification_matrix), type="vector")
+        tree_results <- predict(TREE,newdata=data.frame(as.matrix(matrix_container@classification_matrix)), type="vector")
         tree_pred <- apply(tree_results,1,extract_label_from_prob)
         tree_prob <- apply(tree_results,1,extract_maximum_prob) 
         
@@ -74,7 +74,7 @@ function(matrix_container, SVM=NULL,NAIVE=NULL,BOOSTING=NULL,BAGGING=NULL,RF=NUL
     } else
 
     if (!is.null(NNET)){
-        nnet_results <- predict(NNET,newdata=data.frame(matrix_container@classification_matrix)) #probabilities
+        nnet_results <- predict(NNET,newdata=data.frame(as.matrix(matrix_container@classification_matrix))) #probabilities
         nnet_pred <- apply(nnet_results,1,extract_label_from_prob) #Extract Highest Probability Score
         nnet_prob <- apply(nnet_results,1,extract_maximum_prob) #Extract Probability
         
@@ -84,7 +84,7 @@ function(matrix_container, SVM=NULL,NAIVE=NULL,BOOSTING=NULL,BAGGING=NULL,RF=NUL
     } else
 							   
 	if (!is.null(MAXENT)) {
-		maxent_results <- classify_maxent(matrix_container@classification_matrix)
+		maxent_results <- classify_maxent_sparse(matrix_container@classification_matrix)
 		results_table <- data.frame(as.numeric(as.character(maxent_results)))
 		
 		colnames(results_table)[1] <- "MAXENTROPY_LABEL"
