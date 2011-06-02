@@ -72,9 +72,10 @@ function(fnct,matrix_container,nfold,type=c("SVM","NAIVE","BOOSTING","BAGGING","
 			pred <- classify_maxent_sparse(alldata[rand==i,])
 		}
 
-        try(confusion <- confusion_create(allcodes[rand==i],pred),silent=FALSE) #Internal function "confusion_create" used here
-        cv_accuracy[i] <- round(sum(diag(confusion))/length(allcodes[rand==i]),3)
-        
+		#try(confusion <- confusion_create(allcodes[rand==i],pred),silent=FALSE) #Internal function "confusion_create" used here
+		#cv_accuracy[i] <- round(sum(diag(confusion))/length(allcodes[rand==i]),3)
+        cv_accuracy[i] <- predictive_accuracy(allcodes[rand==i],pred)
+		
         cat("Fold ",i," Out of Sample Accuracy"," = ",cv_accuracy[i],"\n",sep="")
     }
     #GLMNET sometimes has problems with 
