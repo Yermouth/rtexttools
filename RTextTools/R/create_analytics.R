@@ -1,10 +1,10 @@
-create_analytics <- function(matrix_container,classification_results) {
+create_analytics <- function(corpus,classification_results,b=1,threshold=NULL) {
 	create_documentSummary <- function(container, scores) {
 		return(cbind(MANUAL_CODE=as.numeric(as.vector(container@testing_codes)),CONSENSUS_CODE=scores$BEST_LABEL,CONSENSUS_AGREE=scores$NUM_AGREE,CONSENSUS_INCORRECT=container@testing_codes!=scores$BEST_LABEL,PROBABILITY_CODE=scores$BEST_PROB,PROBABILITY_INCORRECT=container@testing_codes!=scores$BEST_PROB))
 	}
 	
 	create_topicSummary <- function(container, scores) {
-		topic_codes <- unique(container@testing_codes)
+		topic_codes <- unique(container@training_codes)
 		manually_coded <- c()
 		automatically_coded_label <- c()
 		automatically_coded_prob <- c()
@@ -41,8 +41,8 @@ create_analytics <- function(matrix_container,classification_results) {
 		topic_codes <- unique(container@testing_codes)
 		
 		bagging_accuracy <- c()
-		nbayes_accuracy <- c()
-		adaboost_accuracy <- c()
+		slda_accuracy <- c()
+		logitboost_accuracy <- c()
 		svm_accuracy <- c()
 		forests_accuracy <- c()
 		glmnet_accuracy <- c()
@@ -61,18 +61,18 @@ create_analytics <- function(matrix_container,classification_results) {
 				svm_accuracy <- append(svm_accuracy,pct_correct)
 			}
 			
-			if (pmatch("NBAYES_LABEL",columns,nomatch=0) > 0) {
+			if (pmatch("SLDA_LABEL",columns,nomatch=0) > 0) {
 				num_manual <- length(container@testing_codes[container@testing_codes==code])
-				pct_analysis <- container@testing_codes[container@testing_codes==scores$NBAYES_LABEL]==code
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$SLDA_LABEL]==code
 				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
-				nbayes_accuracy <- append(nbayes_accuracy,pct_correct)
+				slda_accuracy <- append(slda_accuracy,pct_correct)
 			}
 			
-			if (pmatch("ADABOOST_LABEL",columns,nomatch=0) > 0) {
+			if (pmatch("LOGITBOOST_LABEL",columns,nomatch=0) > 0) {
 				num_manual <- length(container@testing_codes[container@testing_codes==code])
-				pct_analysis <- container@testing_codes[container@testing_codes==scores$ADABOOST_LABEL]==code
+				pct_analysis <- container@testing_codes[container@testing_codes==scores$LOGITBOOST_LABEL]==code
 				pct_correct <- length(pct_analysis[pct_analysis == TRUE])/num_manual
-				adaboost_accuracy <- append(adaboost_accuracy,pct_correct)
+				logitboost_accuracy <- append(logitboost_accuracy,pct_correct)
 			}
 			
 			if (pmatch("BAGGING_LABEL",columns,nomatch=0) > 0) {
@@ -120,8 +120,8 @@ create_analytics <- function(matrix_container,classification_results) {
 		}
 		
 		if (length(bagging_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,BAGGING_ACCURACY=bagging_accuracy*100)
-		if (length(nbayes_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,NBAYES_ACCURACY=nbayes_accuracy*100)
-		if (length(adaboost_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,ADABOOST_ACCURACY=adaboost_accuracy*100)
+		if (length(slda_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,SLDA_ACCURACY=slda_accuracy*100)
+		if (length(logitboost_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,LOGITBOOST_ACCURACY=logitboost_accuracy*100)
 		if (length(svm_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,SVM_ACCURACY=svm_accuracy*100)
 		if (length(forests_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,FORESTS_ACCURACY=forests_accuracy*100)
 		if (length(glmnet_accuracy) > 0) algorithm_summary <- cbind(algorithm_summary,GLMNET_ACCURACY=glmnet_accuracy*100)
@@ -131,17 +131,45 @@ create_analytics <- function(matrix_container,classification_results) {
 		
 		return(algorithm_summary)
 	}
+	
+	if (is.null(threshold)) threshold <- (ncol(classification_results)/2)
+	if (corpus@virgin == FALSE) {
+		score_summary <- score_classify(corpus, classification_results)
+		document_summary <- create_documentSummary(corpus, score_summary)
+		topic_summary <- as.data.frame(create_topicSummary(corpus, score_summary))
+		algorithm_summary <- as.data.frame(create_algorithmSummary(corpus, score_summary))
+		statistics_summary <- as.data.frame(create_precisionRecallSummary(corpus, classification_results, b))
 		
-	score_summary <- score_classify(matrix_container, classification_results)
-	document_summary <- create_documentSummary(matrix_container, score_summary)
-	topic_summary <- create_topicSummary(matrix_container, score_summary)
-	algorithm_summary <- create_algorithmSummary(matrix_container, score_summary)
+		topic_summary <- topic_summary[with(topic_summary, order(TOPIC_CODE)),]
+		row.names(topic_summary) <- topic_summary[,1]
+		algorithm_summary <- algorithm_summary[with(algorithm_summary, order(TOPIC_CODE)),]
+		
+		raw_summary <- cbind(classification_results,document_summary)
+		algorithm_summary <- cbind(statistics_summary, algorithm_summary)
+		algorithm_summary <- algorithm_summary[,(-ncol(statistics_summary)-1)]
+		
+		ensemble_summary <- create_ensembleSummary(as.data.frame(raw_summary),threshold=threshold)
+		
+		setClass("analytics_container",representation(label_summary="data.frame", document_summary="data.frame", algorithm_summary="data.frame", ensemble_summary="matrix"))
+		container <- new("analytics_container", label_summary=as.data.frame(topic_summary)[,-1], document_summary=as.data.frame(raw_summary), algorithm_summary=as.data.frame(algorithm_summary), ensemble_summary=ensemble_summary)
+    } else {
+		score_summary <- score_classify(corpus, classification_results)
+		
+		document_summary <- create_documentSummary(corpus, score_summary)
+		document_summary <- document_summary[,c(2,3,5)]
+		#cbind(document_summary$CONSENSUS_CODE,document_summary$CONSENSUS_AGREE,document_summary$PROBABILITY_CODE)
+
+		raw_summary <- cbind(classification_results, document_summary)
+		
+		topic_summary <- create_topicSummary(corpus, score_summary)
+		topic_summary <- as.data.frame(topic_summary[,c(1,3,4)])
+		topic_summary <- topic_summary[with(topic_summary, order(TOPIC_CODE)),]
+		row.names(topic_summary) <- topic_summary[,1]
+		#cbind(topic_summary$TOPIC_CODE,topic_summary$NUM_CONSENSUS_CODED,topic_summary$NUM_PROBABILITY_CODED)
+		
+		setClass("analytics_container",representation(label_summary="data.frame", document_summary="data.frame"))
+		container <- new("analytics_container", label_summary=as.data.frame(topic_summary)[,-1], document_summary=as.data.frame(raw_summary))
+	}
 	
-	last_two_columns <- (length(score_summary)-1):length(score_summary)
-	raw_summary <- cbind(classification_results,score_summary[last_two_columns])
-	
-    setClass("analytics_container",representation(document_summary="matrix", topic_summary="matrix", algorithm_summary="matrix", score_summary="data.frame"))
-    container <- new("analytics_container", document_summary=document_summary, topic_summary=topic_summary, algorithm_summary=algorithm_summary, score_summary=raw_summary)
-    
     return(container)   
 }

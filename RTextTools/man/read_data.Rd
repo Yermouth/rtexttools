@@ -1,0 +1,56 @@
+\name{read_data}
+\alias{read_data}
+%- Also NEED an '\alias' for EACH other topic documented here.
+\title{
+reads data from files into an R data frame.
+}
+\description{
+Reads data from several types of data storage types into an R data frame.
+}
+\usage{
+read_data(filename, tablename = NULL, type = c("csv", "tab", "accdb", "mdb"),
+...)
+}
+%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{filename}{
+Character string of the name of the file, include path if the file is not located in the working directory.
+}
+  \item{tablename}{
+Microsoft Access database only. The table name in the database.
+}
+  \item{type}{
+Character vector specifying the file type. Options include "csv","tab","accdb","mdb" to denote .csv files, text files, or Access databases.
+}
+  \item{\dots}{
+Other arguments passed to read_data.
+}
+}
+\details{
+%%  ~~ If necessary, more details than the description above ~~
+}
+\value{
+An R data frame object is returned.
+}
+\references{
+%% ~put references to the literature/web site here ~
+}
+\author{
+Loren Collingwood <lorenc2@uw.edu>, Timothy P. Jurka <tpjurka@ucdavis.edu>
+}
+\note{
+%%  ~~further notes~~
+}
+
+%% ~Make other sections like Warning with \section{Warning }{....} ~
+
+\seealso{
+%% ~~objects to See Also as \code{\link{help}}, ~~~
+}
+\examples{
+library(RTextTools)
+data <- read_data(system.file("data/NYTimes.csv.gz",package="RTextTools"),type="csv")
+}
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+\keyword{methods}

@@ -3,7 +3,7 @@ function(libname, pkgname, where) {
 	options(warn=-1)
 	options(stringsAsFactors=FALSE)
 	
-	suggested_packages <- c('maxent','RODBC');
+	suggested_packages <- c('RODBC');
 	for (package in suggested_packages) {
 		package_available <- require(package, quietly=TRUE, character.only=TRUE);
 		if (!package_available) {

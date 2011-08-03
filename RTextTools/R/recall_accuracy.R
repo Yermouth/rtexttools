@@ -1,6 +1,6 @@
-predictive_accuracy <- function (test_codes, predict_codes) 
+recall_accuracy <- function(true_labels, predicted_labels) 
 {
-    a <- cbind(test_codes, predict_codes)
+    a <- cbind(true_labels, predicted_labels)
 #Function for Apply, compares each row one by one.
     identical_row <- function(vector) {
         vec1 <- vector[1]
@@ -26,6 +26,6 @@ predictive_accuracy <- function (test_codes, predict_codes)
 else {
 out2 <- table(out)[2]/sum(table(out))
 }
-names(out2) <- "Pred. Accuracy"
+names(out2) <- "Recall Accuracy"
 return(out2)
 }

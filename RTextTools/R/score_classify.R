@@ -1,4 +1,4 @@
-score_classify <- function(container, results) {
+score_classify <- function(corpus, results) {
 	labels <- c()
 	probs <- c()
 	
@@ -13,7 +13,7 @@ score_classify <- function(container, results) {
 	best_labels <- c()
 	best_probs <- c()
 	agree_score <- c()
-	unique <- sort(unique(container@training_codes))
+	unique <- sort(unique(corpus@training_codes))
 	for (i in 1:nrow(results)) {
 		row_labels <- labels[i,]
 		row_probs <- probs[i,]
