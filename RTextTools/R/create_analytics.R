@@ -1,4 +1,4 @@
-create_analytics <- function(corpus,classification_results,b=1,threshold=NULL) {
+create_analytics <- function(corpus,classification_results,b=1,threshold=NULL) {	
 	create_documentSummary <- function(container, scores) {
 		return(cbind(MANUAL_CODE=as.numeric(as.vector(container@testing_codes)),CONSENSUS_CODE=scores$BEST_LABEL,CONSENSUS_AGREE=scores$NUM_AGREE,CONSENSUS_INCORRECT=container@testing_codes!=scores$BEST_LABEL,PROBABILITY_CODE=scores$BEST_PROB,PROBABILITY_INCORRECT=container@testing_codes!=scores$BEST_PROB))
 	}
@@ -134,7 +134,7 @@ create_analytics <- function(corpus,classification_results,b=1,threshold=NULL) {
 	
 	if (is.null(threshold)) threshold <- (ncol(classification_results)/2)
 	if (corpus@virgin == FALSE) {
-		score_summary <- score_classify(corpus, classification_results)
+		score_summary <- create_scoreSummary(corpus, classification_results)
 		document_summary <- create_documentSummary(corpus, score_summary)
 		topic_summary <- as.data.frame(create_topicSummary(corpus, score_summary))
 		algorithm_summary <- as.data.frame(create_algorithmSummary(corpus, score_summary))
@@ -150,10 +150,9 @@ create_analytics <- function(corpus,classification_results,b=1,threshold=NULL) {
 		
 		ensemble_summary <- create_ensembleSummary(as.data.frame(raw_summary),threshold=threshold)
 		
-		setClass("analytics_container",representation(label_summary="data.frame", document_summary="data.frame", algorithm_summary="data.frame", ensemble_summary="matrix"))
 		container <- new("analytics_container", label_summary=as.data.frame(topic_summary)[,-1], document_summary=as.data.frame(raw_summary), algorithm_summary=as.data.frame(algorithm_summary), ensemble_summary=ensemble_summary)
     } else {
-		score_summary <- score_classify(corpus, classification_results)
+		score_summary <- create_scoreSummary(corpus, classification_results)
 		
 		document_summary <- create_documentSummary(corpus, score_summary)
 		document_summary <- document_summary[,c(2,3,5)]
@@ -167,8 +166,7 @@ create_analytics <- function(corpus,classification_results,b=1,threshold=NULL) {
 		row.names(topic_summary) <- topic_summary[,1]
 		#cbind(topic_summary$TOPIC_CODE,topic_summary$NUM_CONSENSUS_CODED,topic_summary$NUM_PROBABILITY_CODED)
 		
-		setClass("analytics_container",representation(label_summary="data.frame", document_summary="data.frame"))
-		container <- new("analytics_container", label_summary=as.data.frame(topic_summary)[,-1], document_summary=as.data.frame(raw_summary))
+		container <- new("analytics_container_virgin", label_summary=as.data.frame(topic_summary)[,-1], document_summary=as.data.frame(raw_summary))
 	}
 	
     return(container)   

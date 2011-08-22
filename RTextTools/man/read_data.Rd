@@ -20,37 +20,20 @@ Character string of the name of the file, include path if the file is not locate
 Microsoft Access database only. The table name in the database.
 }
   \item{type}{
-Character vector specifying the file type. Options include "csv","tab","accdb","mdb" to denote .csv files, text files, or Access databases.
+Character vector specifying the file type. Options include \code{"csv"}, \code{"tab"}, \code{"accdb"}, \code{"mdb"} to denote .csv files, text files, or Access databases.
 }
   \item{\dots}{
 Other arguments passed to read_data.
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{
-An R data frame object is returned.
-}
-\references{
-%% ~put references to the literature/web site here ~
+An \code{data.frame} object is returned with the contents of the file.
 }
 \author{
 Loren Collingwood <lorenc2@uw.edu>, Timothy P. Jurka <tpjurka@ucdavis.edu>
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 library(RTextTools)
 data <- read_data(system.file("data/NYTimes.csv.gz",package="RTextTools"),type="csv")
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{methods}
+\keyword{method}

@@ -85,8 +85,6 @@ cross_validate <- function(corpus,nfold,algorithm=c("SVM","SLDA","BOOSTING","BAG
 			pred <- pred[,1]
 		}
 
-		#try(confusion <- confusion_create(allcodes[rand==i],pred),silent=FALSE) #Internal function "confusion_create" used here
-		#cv_accuracy[i] <- round(sum(diag(confusion))/length(allcodes[rand==i]),3)
         cv_accuracy[i] <- recall_accuracy(allcodes[rand==i],pred)
 		
         cat("Fold ",i," Out of Sample Accuracy"," = ",cv_accuracy[i],"\n",sep="")
