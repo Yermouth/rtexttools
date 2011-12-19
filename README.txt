@@ -4,7 +4,7 @@ To build and install RTextTools, run the following commands while in the rtextto
 
 R CMD REMOVE RTextTools
 R CMD BUILD RTextTools
-R CMD INSTALL RTextTools_1.1.tar.gz
+R CMD INSTALL RTextTools_1.3.2.tar.gz
 
 SOURCE CODE
 ============
